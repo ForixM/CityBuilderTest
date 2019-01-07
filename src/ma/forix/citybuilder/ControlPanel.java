@@ -85,6 +85,7 @@ public class ControlPanel extends JPanel {
             finances.setVisible(false);
             sauvegarder.setVisible(false);
             charger.setVisible(false);
+            newParty.setVisible(false);
             quitter.setVisible(false);
 
             route.setVisible(true);
@@ -118,6 +119,7 @@ public class ControlPanel extends JPanel {
             finances.setVisible(true);
             sauvegarder.setVisible(true);
             charger.setVisible(true);
+            newParty.setVisible(true);
             quitter.setVisible(true);
         }
     }
