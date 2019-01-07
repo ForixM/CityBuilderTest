@@ -4,6 +4,7 @@ import org.json.simple.JSONObject;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 
 public class Save {
     JSONObject obj;
