@@ -15,46 +15,29 @@ import java.util.Iterator;
 public class Map extends JPanel implements MouseListener, MouseMotionListener {
     private int scale = 50;
     private int MouseCoord[] = {0, 0};
-    private ArrayList<Integer> mouseX = new ArrayList();
-    private ArrayList<Integer> mouseY = new ArrayList();
+    private ArrayList<Integer> mouseX;
+    private ArrayList<Integer> mouseY;
     private int route = 1, immeuble = 2;
     private String currentTool = "Null";
     private boolean clicked = false;
-    private JSONObject map = new JSONObject();
+    private JSONObject map;
     private JSONArray blocks;
 
     public Map(){
         setSize(1000, 550);
-
         addMouseMotionListener(this);
         addMouseListener(this);
-
-        int loop = 0;
-        for(int y = 0; y < getHeight() / scale; y++){
-            for (int x = 0; x < getWidth() / scale; x++){
-                blocks = new JSONArray();
-                blocks.add(0);
-                blocks.add(x);
-                blocks.add(y);
-
-                map.put("block"+loop, blocks);
-                loop++;
-            }
-        }
+        generateMap();
         System.out.println(map.toString());
-
-        for (int y = 0; y < this.getHeight() / scale; y++) {
-            mouseY.add(0);
-        }
-        for (int x = 0; x < this.getWidth() / scale; x++) {
-            mouseX.add(0);
-        }
-
     }
 
     public void generateMap(){
         int loop = 0;
+        map = new JSONObject();
+        mouseX = new ArrayList<>();
+        mouseY = new ArrayList<>();
         for(int y = 0; y < getHeight() / scale; y++){
+            mouseY.add(0);
             for (int x = 0; x < getWidth() / scale; x++){
                 blocks = new JSONArray();
                 blocks.add(0);
@@ -65,18 +48,13 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
                 loop++;
             }
         }
-        System.out.println(map.toString());
-
-        for (int y = 0; y < this.getHeight() / scale; y++) {
-            mouseY.add(0);
-        }
         for (int x = 0; x < this.getWidth() / scale; x++) {
             mouseX.add(0);
         }
+        System.out.println(map.toString());
     }
 
     public void newMap(){
-        map = new JSONObject();
         mouseY.clear();
         mouseX.clear();
         generateMap();
@@ -104,49 +82,31 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
         JSONArray infos;
         Iterator<Integer> iterator;
         Iterator<Long> iteratorL;
+        int type, Bx, By;
         int loop = 0;
         for (int y = 0; y < getHeight() / scale; y++){
             for (int x = 0; x < getWidth() / scale; x++){
+                infos = (JSONArray) map.get("block" + loop);
                 try {
-                    infos = (JSONArray) map.get("block" + loop);
                     iterator = infos.iterator();
-                    int type = iterator.next();
-                    int Bx = iterator.next();
-                    int By = iterator.next();
-                    if (type == route) {
-                        g.setColor(Color.BLACK);
-                        g.fillRect(Bx * scale + Bx, By * scale + By, scale, scale);
-                    }
-
-                    if (type == immeuble) {
-                        g.setColor(Color.BLUE);
-                        g.fillRect(Bx * scale + Bx, By * scale + By, scale, scale);
-                    }
-
-                    loop++;
+                    type = iterator.next();
+                    Bx = iterator.next();
+                    By = iterator.next();
                 } catch (ClassCastException cce){
-                    infos = (JSONArray) map.get("block" + loop);
                     iteratorL = infos.iterator();
-                    long type = iteratorL.next();
-                    long Bx = iteratorL.next();
-                    long By = iteratorL.next();
-                    if (type == route) {
-                        g.setColor(Color.BLACK);
-                        g.fillRect((int) (Bx * scale + Bx), (int) (By * scale + By), scale, scale);
-                    }
-
-                    if (type == immeuble) {
-                        g.setColor(Color.BLUE);
-                        g.fillRect((int) (Bx * scale + Bx), (int) (By * scale + By), scale, scale);
-                    }
-
-                    loop++;
+                    type = Math.toIntExact(iteratorL.next());
+                    Bx = Math.toIntExact(iteratorL.next());
+                    By = Math.toIntExact(iteratorL.next());
                 }
-            }
-        }
-
-        for (int y = 0; y < getHeight() / scale; y++){
-            for (int x = 0; x < getWidth() / scale; x++){
+                if (type == route) {
+                    g.setColor(Color.BLACK);
+                    g.fillRect(Bx * scale + Bx+1, By * scale + By+1, scale-1, scale-1);
+                }
+                if (type == immeuble) {
+                    g.setColor(Color.BLUE);
+                    g.fillRect(Bx * scale + Bx+1, By * scale + By+1, scale-1, scale-1);
+                }
+                loop++;
                 if(mouseX.get(x)==-1 && mouseY.get(y) == -1){
                     if (clicked)
                         g.setColor(Color.YELLOW);
@@ -158,10 +118,7 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
         }
     }
 
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        if(!clicked)
-            clicked = true;
+    private void mouseUpdate(MouseEvent e){
         if (MouseCoord[0] >= 0 && MouseCoord[0] <= getWidth()/scale-1 && MouseCoord[1] >= 0 && MouseCoord[1] <= getHeight()/scale-1) {
             mouseX.set(MouseCoord[0], 0);
             mouseY.set(MouseCoord[1], 0);
@@ -172,16 +129,17 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
             mouseX.set(MouseCoord[0], -1);
             mouseY.set(MouseCoord[1], -1);
         }
+    }
+
+    private void setStructure(){
+        int nbrBlock = MouseCoord[1]*(mouseX.size()+1)+MouseCoord[0];
+        blocks = new JSONArray();
         if (currentTool.equals("Route")){
-            int nbrBlock = MouseCoord[1]*(mouseX.size()+1)+MouseCoord[0];
-            blocks = new JSONArray();
             blocks.add(route);
             blocks.add(MouseCoord[0]);
             blocks.add(MouseCoord[1]);
             map.replace("block"+nbrBlock, blocks);
         } else if (currentTool.equals("Immeuble")){
-            int nbrBlock = MouseCoord[1]*(mouseX.size()+1)+MouseCoord[0];
-            blocks = new JSONArray();
             blocks.add(immeuble);
             blocks.add(MouseCoord[0]);
             blocks.add(MouseCoord[1]);
@@ -190,25 +148,22 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
     }
 
     @Override
-    public void mouseMoved(MouseEvent e) {
-        if (clicked)
-            clicked = false;
-        if (MouseCoord[0] >= 0 && MouseCoord[0] <= getWidth()/scale-1 && MouseCoord[1] >= 0 && MouseCoord[1] <= getHeight()/scale-1) {
-            mouseX.set(MouseCoord[0], 0);
-            mouseY.set(MouseCoord[1], 0);
-        }
-            MouseCoord[0] = e.getX() / (scale+1);
-            MouseCoord[1] = e.getY() / (scale+1);
-        if (MouseCoord[0] >= 0 && MouseCoord[0] <= getWidth()/scale-1 && MouseCoord[1] >= 0 && MouseCoord[1] <= getHeight()/scale-1) {
-            mouseX.set(MouseCoord[0], -1);
-            mouseY.set(MouseCoord[1], -1);
-        }
+    public void mouseDragged(MouseEvent e) {
+        if(!clicked)
+            clicked = true;
+        mouseUpdate(e);
+        setStructure();
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-
+    public void mouseMoved(MouseEvent e) {
+        if (clicked)
+            clicked = false;
+        mouseUpdate(e);
     }
+
+    @Override
+    public void mouseClicked(MouseEvent e) { }
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -220,30 +175,10 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
     public void mouseReleased(MouseEvent e) {
         if (clicked)
             clicked = false;
-        if (currentTool.equals("Route")){
-            int nbrBlock = MouseCoord[1]*(mouseX.size()+1)+MouseCoord[0];
-            blocks = new JSONArray();
-            blocks.add(route);
-            blocks.add(MouseCoord[0]);
-            blocks.add(MouseCoord[1]);
-            map.replace("block"+nbrBlock, blocks);
-        } else if (currentTool.equals("Immeuble")){
-            int nbrBlock = MouseCoord[1]*(mouseX.size()+1)+MouseCoord[0];
-            blocks = new JSONArray();
-            blocks.add(immeuble);
-            blocks.add(MouseCoord[0]);
-            blocks.add(MouseCoord[1]);
-            map.replace("block"+nbrBlock, blocks);
-        }
+        setStructure();
     }
-
     @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
+    public void mouseEntered(MouseEvent e) { }
     @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
+    public void mouseExited(MouseEvent e) { }
 }
