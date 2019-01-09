@@ -8,7 +8,6 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -17,7 +16,7 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
     private int MouseCoord[] = {0, 0};
     private ArrayList<Integer> mouseX;
     private ArrayList<Integer> mouseY;
-    private int route = 1, immeuble = 2;
+    private int canBuild = -1, route = 1, immeuble = 2;
     private String currentTool = "Null";
     private boolean clicked = false;
     private JSONObject map;
@@ -106,6 +105,18 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
                     g.setColor(Color.BLUE);
                     g.fillRect(Bx * scale + Bx+1, By * scale + By+1, scale-1, scale-1);
                 }
+                if (type == canBuild) {
+                    if(mouseX.get(x)==-1 && mouseY.get(y) == -1){
+                        if (clicked)
+                            g.setColor(Color.YELLOW);
+                        if (!clicked)
+                            g.setColor(Color.GREEN);
+                        g.drawRect(x * scale+x, y * scale+y, scale, scale);
+                    } else {
+                        g.setColor(Color.lightGray);
+                        g.drawRect(Bx * scale + Bx, By * scale + By, scale, scale);
+                    }
+                }
                 loop++;
                 if(mouseX.get(x)==-1 && mouseY.get(y) == -1){
                     if (clicked)
@@ -139,11 +150,91 @@ public class Map extends JPanel implements MouseListener, MouseMotionListener {
             blocks.add(MouseCoord[0]);
             blocks.add(MouseCoord[1]);
             map.replace("block"+nbrBlock, blocks);
+            JSONArray temp;
+            temp = (JSONArray) map.get("block"+(nbrBlock+1));
+            if (!temp.get(0).toString().equals(Integer.toString(route)) /*|| !map.get("block"+(nbrBlock+1)).equals(immeuble)*/) {
+                System.out.println(temp.get(0).toString());
+                System.out.println(temp.get(1).toString());
+                System.out.println(temp.get(2).toString());
+                blocks = new JSONArray();
+                blocks.add(canBuild);
+                blocks.add(MouseCoord[0] + 1);
+                blocks.add(MouseCoord[1]);
+                map.replace("block" + (nbrBlock + 1), blocks);
+                System.out.println(map.get("block" + nbrBlock));
+                System.out.println(map.get("block" + (nbrBlock + 1)));
+            }
+            temp = new JSONArray();
+            temp = (JSONArray) map.get("block"+(nbrBlock-1));
+            if (!temp.get(0).toString().equals(Integer.toString(route))/* || !map.get("block"+(nbrBlock-1)).equals(immeuble)*/) {
+                blocks = new JSONArray();
+                blocks.add(canBuild);
+                blocks.add(MouseCoord[0] - 1);
+                blocks.add(MouseCoord[1]);
+                map.replace("block" + (nbrBlock - 1), blocks);
+            }
+            temp = new JSONArray();
+            temp = (JSONArray) map.get("block"+((MouseCoord[1] - 1) * (mouseX.size() + 1) + MouseCoord[0]));
+            if (!temp.get(0).toString().equals(Integer.toString(route))/* || !map.get("block"+((MouseCoord[1] - 1) * (mouseX.size() + 1) + MouseCoord[0])).equals(immeuble)*/) {
+                blocks = new JSONArray();
+                blocks.add(canBuild);
+                blocks.add(MouseCoord[0]);
+                blocks.add(MouseCoord[1] - 1);
+                map.replace("block" + ((MouseCoord[1] - 1) * (mouseX.size() + 1) + MouseCoord[0]), blocks);
+            }
+            temp = new JSONArray();
+            temp = (JSONArray) map.get("block"+((MouseCoord[1] + 1) * (mouseX.size() + 1) + MouseCoord[0]));
+            if (!temp.get(0).toString().equals(Integer.toString(route))/* || !map.get("block"+((MouseCoord[1] + 1) * (mouseX.size() + 1) + MouseCoord[0])).equals(immeuble)*/) {
+                blocks = new JSONArray();
+                blocks.add(canBuild);
+                blocks.add(MouseCoord[0]);
+                blocks.add(MouseCoord[1] + 1);
+                map.replace("block" + ((MouseCoord[1] + 1) * (mouseX.size() + 1) + MouseCoord[0]), blocks);
+            }
+            temp = new JSONArray();
+            temp = (JSONArray) map.get("block"+((MouseCoord[1] + 1) * (mouseX.size() + 1) + MouseCoord[0] + 1));
+            if (!temp.get(0).toString().equals(Integer.toString(route))/* || !map.get("block"+((MouseCoord[1] + 1) * (mouseX.size() + 1) + MouseCoord[0] + 1)).equals(immeuble)*/) {
+                blocks = new JSONArray();
+                blocks.add(canBuild);
+                blocks.add(MouseCoord[0] + 1);
+                blocks.add(MouseCoord[1] + 1);
+                map.replace("block" + ((MouseCoord[1] + 1) * (mouseX.size() + 1) + MouseCoord[0] + 1), blocks);
+            }
+            temp = new JSONArray();
+            temp = (JSONArray) map.get("block"+((MouseCoord[1] - 1) * (mouseX.size() + 1) + MouseCoord[0] - 1));
+            if (!temp.get(0).toString().equals(Integer.toString(route))/* || !map.get("block"+((MouseCoord[1] - 1) * (mouseX.size() + 1) + MouseCoord[0] - 1)).equals(immeuble)*/) {
+                blocks = new JSONArray();
+                blocks.add(canBuild);
+                blocks.add(MouseCoord[0] - 1);
+                blocks.add(MouseCoord[1] - 1);
+                map.replace("block" + ((MouseCoord[1] - 1) * (mouseX.size() + 1) + MouseCoord[0] - 1), blocks);
+            }
+            temp = new JSONArray();
+            temp = (JSONArray) map.get("block"+((MouseCoord[1] - 1) * (mouseX.size() + 1) + MouseCoord[0] + 1));
+            if (!temp.get(0).toString().equals(Integer.toString(route))/* || !map.get("block"+((MouseCoord[1] - 1) * (mouseX.size() + 1) + MouseCoord[0] + 1)).equals(immeuble)*/) {
+                blocks = new JSONArray();
+                blocks.add(canBuild);
+                blocks.add(MouseCoord[0] + 1);
+                blocks.add(MouseCoord[1] - 1);
+                map.replace("block" + ((MouseCoord[1] - 1) * (mouseX.size() + 1) + MouseCoord[0] + 1), blocks);
+            }
+            temp = new JSONArray();
+            temp = (JSONArray) map.get("block"+((MouseCoord[1] + 1) * (mouseX.size() + 1) + MouseCoord[0] - 1));
+            if (!temp.get(0).toString().equals(Integer.toString(route))/* || !map.get("block"+((MouseCoord[1] + 1) * (mouseX.size() + 1) + MouseCoord[0] - 1)).equals(immeuble)*/) {
+                blocks = new JSONArray();
+                blocks.add(canBuild);
+                blocks.add(MouseCoord[0] - 1);
+                blocks.add(MouseCoord[1] + 1);
+                map.replace("block" + ((MouseCoord[1] + 1) * (mouseX.size() + 1) + MouseCoord[0] - 1), blocks);
+            }
         } else if (currentTool.equals("Immeuble")){
-            blocks.add(immeuble);
-            blocks.add(MouseCoord[0]);
-            blocks.add(MouseCoord[1]);
-            map.replace("block"+nbrBlock, blocks);
+            JSONArray temp = (JSONArray) map.get("block"+nbrBlock);
+            if (temp.get(0).toString().equals(Integer.toString(-1))) {
+                blocks.add(immeuble);
+                blocks.add(MouseCoord[0]);
+                blocks.add(MouseCoord[1]);
+                map.replace("block" + nbrBlock, blocks);
+            }
         }
     }
 
