@@ -10,6 +10,7 @@ public class Fenetre extends JFrame implements ActionListener, MouseListener, Mo
     private ContentPane contentPane;
     private Map map;
     private ControlPanel controlPanel;
+    private PanelTest panelTest;
 
     public Fenetre(){
         contentPane = new ContentPane();
@@ -22,12 +23,19 @@ public class Fenetre extends JFrame implements ActionListener, MouseListener, Mo
         map.setVisible(true);
         map.setLayout(null);
 
+        panelTest = new PanelTest(map);
+        panelTest.setSize(1000, 550);
+        panelTest.setVisible(true);
+        panelTest.setLayout(null);
+        panelTest.setOpaque(false);
+
         controlPanel = new ControlPanel(map);
         controlPanel.setSize(1000, 50);
         controlPanel.setBackground(Color.lightGray);
         controlPanel.setVisible(true);
         controlPanel.setLayout(null);
 
+        addComponent(map, panelTest, 0, 0, 1000, 550);
         addComponent(contentPane, map, 0, 0, 1000, 550);
         addComponent(contentPane, controlPanel, 0, 550, 1000, 50);
 
@@ -48,6 +56,7 @@ public class Fenetre extends JFrame implements ActionListener, MouseListener, Mo
     public void Trame(){
         while (true){
             map.repaint();
+            panelTest.repaint();
             try {
                 Thread.sleep(1000/60);
             } catch (InterruptedException e) {
